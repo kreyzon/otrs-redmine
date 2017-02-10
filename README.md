@@ -6,6 +6,7 @@ Antes de mais nada, deve-se entender como está sendo planejado o processo de in
 No meu caso, temos o seguinte:
 * [Bitnami Redmine Stack](https://bitnami.com/stack/redmine)
 * [OTRS 5.0.4](https://www.otrs.com/download-open-source-help-desk-software-otrs-free/)
+
 O Redmine é utilizado para gerenciar as tarefas da equipe de desenvolvimento baseado na metodologia do SCRUM, mas adaptado à RPG (Role-playing game), onde nossas tarefas são tratadas como 'Monstros' que possuem as situações 'Quest' (To Do), 'Batalha' (In Process), 'Resultado' (To Verify) e 'Vitória' (Done).
 O OTRS veio a ser implementado pois alguns clientes tinham acesso ao Redmine para que demandas fossem geradas, entretanto nem todas as demandas dos clientes realmente precisavam de desenvolvimento (no caso virar um monstro). Para filtrar melhor isso, deixamos a cargo do OTRS o recebimento de chamados, entre seus estados encontram-se 'Novo', 'Aberto', 'Em Atendimento', 'Em Desenvolvimento', 'Aguardando deploy', 'Pendente de Aprovação', 'Fechado com sucesso' e 'Fechado sem aprovação'. Caso fosse alguma dúvida ou erro operacional informaríamos a resposta pelo próprio OTRS, caso o chamado entra-se 'Em Desenvolvimento' seria gerado um Monstro no Redmine. Mas isso de ficar tendo que trocar de um sistema para outro, na visão de quem iria gerenciar isso, acabou sendo bastante massivo, por isso tentamos automatizar o máximo possivel do processo.
 
