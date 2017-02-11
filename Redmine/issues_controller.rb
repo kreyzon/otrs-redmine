@@ -153,7 +153,7 @@ class IssuesController < ApplicationController
       # verificar se tem o campo OTRS informado
       field = IssueCustomField.find_by_name('OTRS')
       if @issue.custom_value_for(field).value
-        uri = URI.parse("http://localhost:81/otrs/nph-genericinterface.pl/Webservice/Teste/UpdateTicket?TicketNumber=#{@issue.custom_value_for(field)}&UserLogin=cleissonvb@gmail.com&Password=cvb001332")
+        uri = URI.parse("http://localhost:81/otrs/nph-genericinterface.pl/Webservice/Teste/UpdateTicket?TicketNumber=#{@issue.custom_value_for(field)}&UserLogin=user@example.com&Password=yourpass")
         body = "{\"DynamicField\" : {\"Name\" : \"redmine\", \"Value\" : #{@issue.id}}}"
         headers = {'Content-Type' => 'application/json', 'Charset' => 'utf-8' }
         http = Net::HTTP.new(uri.host, uri.port)
@@ -213,7 +213,21 @@ class IssuesController < ApplicationController
     if saved
       render_attachment_warning_if_needed(@issue)
       flash[:notice] = l(:notice_successful_update) unless @issue.current_journal.new_record?
-
+      # verificar se tem o campo OTRS informado e se a situação da issue é Vitória(id=5)
+      field = IssueCustomField.find_by_name('OTRS')
+      if @issue.custom_value_for(field).value && @issue.status_id == 5
+        uri = URI.parse("http://localhost:81/otrs/nph-genericinterface.pl/Webservice/Teste/UpdateTicket?TicketNumber=#{@issue.custom_value_for(field)}&UserLogin=user@example.com&Password=yourpass")
+        body = "{\"Ticket\" : {\"StateID\" : 10}, \"Article\" : {\"Subject\" : \"Retorno do Desenvolvimento\", \"Body\":\"#{@issue.current_journal.notes}\", \"ArticleType\":\"note-internal\", \"HistoryType\":\"AddNote\",\"Charset\": \"utf8\", \"MimeType\":\"application/json\"}}"
+        headers = {'Content-Type' => 'application/json', 'Charset' => 'utf-8' }
+        http = Net::HTTP.new(uri.host, uri.port)
+        request = Net::HTTP::Put.new(uri.request_uri)
+        headers.keys.each do |key|
+          request[key] = headers[key]
+        end
+        request.body = body
+        http.request(request)
+      end
+      #
       respond_to do |format|
         format.html { redirect_back_or_default issue_path(@issue) }
         format.api  { render_api_ok }
