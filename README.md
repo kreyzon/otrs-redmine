@@ -41,14 +41,30 @@ Após o entendimento de como o processo de atualização deva funcionar, tem que
 Percebam que o OTRS tem 2 modos de webservices, Provedor e Requisitante. No Provedor será configurado para que chamadas possam ser feitas ao OTRS, onde uma série de Operações já definidas podem ser selecionadas para habilitar nesse webservice que foi criado. No nosso caso, focarei nas Operação de TicketUpdate, uma vez que a comunicação com o Redmine depende do chamado já está criado e está sendo atualizado. No Requisitante é configurado  a comunicação com o Redmine, onde é indicado o host do Redmine e autenticação, além de configurar Eventos do OTRS para realizar as chamadas no Redmine. Novamente no nosso caso, focarei no Evento TicketStateUpdate, pois é a partir de uma atualização do Estado do chamado que o monstro é criado.
 ## Provedor
 ![OTRS Provedor](/img/otrs-provider.png)
-Conforme a imagem acima, a parte de Provedor do OTRS é composta de 2 sessões, Configurações e Operações.
-![OTRS Provedor - Configuração de Transporte](/img/otrs-provider-transport.png)
+Conforme a imagem acima, a parte de Provedor do OTRS é composta de 2 sessões, Configurações e Operações. Como algumas opções da parte de Configurações dependem das Operações, vou explicar sua configuração inicialmente.
+
+Para entrar na tela de Detalhes da Operação (imagem abaixo), ou se seleciona uma opção de 'Adicionar Operation' ou se clica em uma Operação presente na tabela. Conforme percebe-se na tela, o único campo obrigatório é o de Nome, mas é sempre bom informar uma descrição para o sentido dessa operação, pois é permitido ter várias operações iguais com nomes diferentes.
 ![OTRS Provedor - Configuração de Operação](/img/otrs-provider-operationdetail.png)
+
+Na parte de Configurações, uma vez que tenha sido escolhida entre HTTP::REST ou HTTP::SOAP. No nosso caso, foi escolhido a opção de HTTP::REST pois o consumo pelo Redmine e outros sistemas fica mais simplificado. Para acessa a tela de Transporte (imagem abaixo), basta clicar em Configurar ao lado da opção do Transporte. De acordo com as operações informadas, apareceram "Mapeamento da rota para a operação 'xxx'" onde serão informados os PATH de acesso à cada função, e para cada mapeamento pode ser informado quais métodos são válidos para a chamada.
+![OTRS Provedor - Configuração de Transporte](/img/otrs-provider-transport.png)
+
+ Após informar o PATH de cada operação, para acessa-la basta usar a URL "http://<HOST>:<PORT>/otrs/nph-genericinterface.pl/Webservice/<NOME_WEBSERVICE>/<NOME_PATH>/<[PARAMS]>" onde:
+ * HOST: nome do host de acesso ao OTRS
+ * PORT: porta do host de acesso ao OTRS, caso seja 80 não é necessário informar
+ * NOME_WEBSERVICE: nome do werbservice informado na criação do mesmo
+ * NOME_PATH: nome do PATH dado no mapeamento para acessa a Operation desejada
+ * [PARAMS]: sequência de parametros utilizados para uso do Webservice. No geral, são obrigatórios os parâmetros "UserLogin" ou "CustomerID" junto de "Password" ou o parâmetro "SessionID" que pode ser gerado com a Operação 'SessionCreate', que só exige os parâmetros "UserLogin" ou "CustomerID" junto de "Password". Dependendo da operação, existem outros parâmetros obrigatórios. Essa relação pode ser encontrada [na documentação de desenvolvedor do OTRS](https://otrs.github.io/doc/api/otrs/stable/Perl/index.html) pesquisando por 'Kernel::GenericInterface::Operation'
+
 ## Requisitante
 ![OTRS Requisitante](/img/otrs-requester.png)
-Conforme a imagem acima, a parte de Provedor do OTRS é composta de 2 sessões, Configurações e Invocadores.
-![OTRS Requisitante - Configuração de Transporte](/img/otrs-requester-transport.png)
+Conforme a imagem acima, a parte de Requisitante do OTRS é composta de 2 sessões, Configurações e Invocadores. Como algumas opções da parte de Configurações dependem dos Invocadores, vou explicar sua configuração inicialmente.
+
+Para entrar na tela de Detalhes do Invocador (imagem abaixo), ou se seleciona uma opção de 'Adicionar Invoker' ou se clica em um Invocador presente na tabela. Conforme percebe-se na tela, o único campo obrigatório é o de Nome, mas é sempre bom informar uma descrição para o sentido desse invocador, pois é permitido ter vários invocadores iguais com nomes diferentes. O mais interessante nessa tela é a tabela de 'Disparadores de evento', onde é possível indicar um evento do OTRS a chamar o webservice remoto. No nosso caso, como é somente por atualização do chamado do OTRS, somente o TicketStateUpdate é necessário.
 ![OTRS Requisitante - Configuração de Invocador](/img/otrs-requester-invokerdetail.png)
+
+Na parte de Configuração, conforme imagem abaixo, é necessário informar a URL do host do webservice, no nosso caso, o do acesso ao Redmine, e para cada invocador é necessário informar o PATH que será acessado no webservice remoto. Como a chamada do Redmine é feita através de JSON e queremos criar tarefas, basta colocar como /issues.json e indicar quais métodos HTTP são válidos para a chamada. Além disso, deve-se informar qual a autenticação, que no caso seria BasicAuth e informar um usuário e senha válidos no Redmine.
+![OTRS Requisitante - Configuração de Transporte](/img/otrs-requester-transport.png)
 ## Campo Redmine
 # Terceiro Passo: Configuração do Redmine
 ## Mudança no código
