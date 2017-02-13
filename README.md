@@ -50,6 +50,7 @@ Na parte de Configurações, uma vez que tenha sido escolhida entre HTTP::REST o
 ![OTRS Provedor - Configuração de Transporte](/img/otrs-provider-transport.png)
 
  Após informar o PATH de cada operação, para acessa-la basta usar a URL "http://<HOST>:<PORT>/otrs/nph-genericinterface.pl/Webservice/<NOME_WEBSERVICE>/<NOME_PATH>/<[PARAMS]>" onde:
+
  * HOST: nome do host de acesso ao OTRS
  * PORT: porta do host de acesso ao OTRS, caso seja 80 não é necessário informar
  * NOME_WEBSERVICE: nome do werbservice informado na criação do mesmo
@@ -65,7 +66,24 @@ Para entrar na tela de Detalhes do Invocador (imagem abaixo), ou se seleciona um
 
 Na parte de Configuração, conforme imagem abaixo, é necessário informar a URL do host do webservice, no nosso caso, o do acesso ao Redmine, e para cada invocador é necessário informar o PATH que será acessado no webservice remoto. Como a chamada do Redmine é feita através de JSON e queremos criar tarefas, basta colocar como /issues.json e indicar quais métodos HTTP são válidos para a chamada. Além disso, deve-se informar qual a autenticação, que no caso seria BasicAuth e informar um usuário e senha válidos no Redmine.
 ![OTRS Requisitante - Configuração de Transporte](/img/otrs-requester-transport.png)
+
 ## Campo Redmine
+Uma vez configurado como o OTRS vai se comportar, seja como Porvedor, seja como Requisitante, é necessário uma última alteração a ser feita que é um link direto entre o OTRS e o Redmine. Para isso, basta ir em Administração > Campos Dinâmicos. Na tela é possível criar um campo novo para "Chamado" ou para "Artigo", foi escolhida a opção de deixar em Chamado pois é mais visível ao agente de suporte. Ao clicar sobre o campo do Chamado, aparece uma lista de opções sobre o tipo do campo a ser criado, dentre eles estão "Checkbox", "Data", "Data/Hora", "Multisseleção", "Suspenso", "Texto" e "Área de texto", no nosso caso foi escolhido a opção de Texto.
+Após a seleção, você será direcionado a tela de configuração do campo, onde tem 3 campos obrigatórios, Nome, Campo e Ordem do Campo mas um já vem preenchido (Ordem do Campo). "Nome" é a variável a ser criada, não pode conter nada além de  caracteres alfabéticos e numéricos. Já o "Campo" é o texto label que aparecerá no OTRS quando ele for solicitado, seja nas tabelas ou em modais do sistema. Além desses campos, um campo interessante é o 'Mostrar Link', que permite uma formatação do valor a ser informado no campo para o link colocado, essa formatação se dá da seguinte forma [% Data.XXX | uri %] onde Data.XXX é referente à todos os campos dinâmicos, no lugar do XXX deve colocar o "Nome" do campo. A imagem abaixo mostra como ficou a configuração do campo redmine.
+![OTRS Campos Dinâmicos - Campo Redmine](/img/otrs-customfield-redmine.png)
+
+Após a criação do campo, deve-se alterar as configrações do sistema para fazer aparecer o campo. Para tal, basta ir em Administração > Configuração do Sistema, pesquisar pelo grupo Ticket e editar somente aqueles que são necessários. No nosso caso, os necessários foram:
+
+* Frontend::Agent::Ticket::ViewStatus, para mostrar na visão de estados o link do Redmine
+* Frontend::Agent::Ticket::ViewLocked, para mostrar na visão de chamados bloqueados ao agente o link do Redmine
+* Frontend::Agent::Ticket::ViewNote, para mostrar ao lançar uma nota o link do Redmine
+
+A tela de ViewStatus e ViewLocked, a forma de incluir o campo é praticamente a mesma, ela segue o exemplo da tela abaixo, obrigatoriamente para campos dinâmicos deve-se colocar DynamicField_XXX, onde XXX é no Nome do campo. O valor na coluna pode variar entre 0 (Desabilitado, não aparece para ninguém), 1 (Disponível, o agente pode optar por mostra-lo ou não na tabela) e 2 (Habilitado, obrigatoriamente mostra na tabela).
+![OTRS Campos Dinâmicos - ViewStatus](/img/otrs-customfield-viewstatus.png)
+
+Na tela de ViewNote, basta procurar por DynamicField que aparecerá a tabela onde se informar o Nome do campo (sem a necessidade do DynamicField_) e o valor que ele vai receber que varia entre 0 (Desabilitado, não pode ser mexido por ninguém), 1 (Habilitado, o agente pode optar por preenche-lo ou não) e 2 (Habilitado e requerido, obrigatoriamente deve ser informado).
+![OTRS Campos Dinâmicos - ViewNote](/img/otrs-customfield-viewnote.png)
+
 # Terceiro Passo: Configuração do Redmine
 ## Mudança no código
 ## Campo OTRS
