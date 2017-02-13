@@ -658,9 +658,9 @@ sub RequesterPerformRequest {
                 Data    => $Param{Data},
             );
 
-            my $student = decode_json $Param{Data}->{issue};
+            my $json = decode_json $Param{Data}->{issue};
             $Param{Data} = $JSONObject->Encode(
-                Data => $student,
+                Data => $json,
             );
 
             # make sure data is correctly encoded

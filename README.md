@@ -49,7 +49,7 @@ Para entrar na tela de Detalhes da Operação (imagem abaixo), ou se seleciona u
 Na parte de Configurações, uma vez que tenha sido escolhida entre HTTP::REST ou HTTP::SOAP. No nosso caso, foi escolhido a opção de HTTP::REST pois o consumo pelo Redmine e outros sistemas fica mais simplificado. Para acessa a tela de Transporte (imagem abaixo), basta clicar em Configurar ao lado da opção do Transporte. De acordo com as operações informadas, apareceram "Mapeamento da rota para a operação 'xxx'" onde serão informados os PATH de acesso à cada função, e para cada mapeamento pode ser informado quais métodos são válidos para a chamada.
 ![OTRS Provedor - Configuração de Transporte](/img/otrs-provider-transport.png)
 
- Após informar o PATH de cada operação, para acessa-la basta usar a URL "http://<HOST>:<PORT>/otrs/nph-genericinterface.pl/Webservice/<NOME_WEBSERVICE>/<NOME_PATH>/<[PARAMS]>" onde:
+ Após informar o PATH de cada operação, para acessa-la basta usar a URL "http://[HOST]:[PORT]/otrs/nph-genericinterface.pl/Webservice/[NOME_WEBSERVICE]/[NOME_PATH]/[PARAMS]" onde:
 
  * HOST: nome do host de acesso ao OTRS
  * PORT: porta do host de acesso ao OTRS, caso seja 80 não é necessário informar
@@ -59,16 +59,16 @@ Na parte de Configurações, uma vez que tenha sido escolhida entre HTTP::REST o
 
 ## Requisitante
 ![OTRS Requisitante](/img/otrs-requester.png)
-Conforme a imagem acima, a parte de Requisitante do OTRS é composta de 2 sessões, Configurações e Invocadores. Como algumas opções da parte de Configurações dependem dos Invocadores, vou explicar sua configuração inicialmente.
+Conforme a imagem acima, a parte de Requisitante do OTRS é composta de 2 sessões, Configurações e Invocadores. Como algumas opções da parte de Configurações dependem dos Invocadores, vou explicar sua configuração inicialmente. Adianto que nessa parte foi necessário fazer uma mudança no código, pois os Invocadores fornecidos pelo OTRS são extremamente genéricos e não funcionam, servem apenas para servir de exemplo para serem desenvolvidos. Em "Mudança de código" está explicado o que foi alterado e como habilitar o Invocador novo. No nosso caso, esse invocador se chama RedmineInvoker.
 
-Para entrar na tela de Detalhes do Invocador (imagem abaixo), ou se seleciona uma opção de 'Adicionar Invoker' ou se clica em um Invocador presente na tabela. Conforme percebe-se na tela, o único campo obrigatório é o de Nome, mas é sempre bom informar uma descrição para o sentido desse invocador, pois é permitido ter vários invocadores iguais com nomes diferentes. O mais interessante nessa tela é a tabela de 'Disparadores de evento', onde é possível indicar um evento do OTRS a chamar o webservice remoto. No nosso caso, como é somente por atualização do chamado do OTRS, somente o TicketStateUpdate é necessário.
+Para entrar na tela de Detalhes do Invocador (imagem abaixo), ou se seleciona uma opção de 'Adicionar Invoker' ou se clica em um Invocador presente na tabela (RedmineInvoker foi o escolhido). Conforme percebe-se na tela, o único campo obrigatório é o de Nome, mas é sempre bom informar uma descrição para o sentido desse invocador, pois é permitido ter vários invocadores iguais com nomes diferentes. O mais interessante nessa tela é a tabela de 'Disparadores de evento', onde é possível indicar um evento do OTRS a chamar o webservice remoto. No nosso caso, como é somente por atualização do chamado do OTRS, somente o TicketStateUpdate é necessário.
 ![OTRS Requisitante - Configuração de Invocador](/img/otrs-requester-invokerdetail.png)
 
 Na parte de Configuração, conforme imagem abaixo, é necessário informar a URL do host do webservice, no nosso caso, o do acesso ao Redmine, e para cada invocador é necessário informar o PATH que será acessado no webservice remoto. Como a chamada do Redmine é feita através de JSON e queremos criar tarefas, basta colocar como /issues.json e indicar quais métodos HTTP são válidos para a chamada. Além disso, deve-se informar qual a autenticação, que no caso seria BasicAuth e informar um usuário e senha válidos no Redmine.
 ![OTRS Requisitante - Configuração de Transporte](/img/otrs-requester-transport.png)
 
 ## Campo Redmine
-Uma vez configurado como o OTRS vai se comportar, seja como Porvedor, seja como Requisitante, é necessário uma última alteração a ser feita que é um link direto entre o OTRS e o Redmine. Para isso, basta ir em Administração > Campos Dinâmicos. Na tela é possível criar um campo novo para "Chamado" ou para "Artigo", foi escolhida a opção de deixar em Chamado pois é mais visível ao agente de suporte. Ao clicar sobre o campo do Chamado, aparece uma lista de opções sobre o tipo do campo a ser criado, dentre eles estão "Checkbox", "Data", "Data/Hora", "Multisseleção", "Suspenso", "Texto" e "Área de texto", no nosso caso foi escolhido a opção de Texto.
+Uma vez configurado como o OTRS vai se comportar, seja como Provedor, seja como Requisitante, é necessário uma última alteração a ser feita que é um link direto entre o OTRS e o Redmine. Para isso, basta ir em Administração > Campos Dinâmicos. Na tela é possível criar um campo novo para "Chamado" ou para "Artigo", foi escolhida a opção de deixar em Chamado pois é mais visível ao agente de suporte. Ao clicar sobre o campo do Chamado, aparece uma lista de opções sobre o tipo do campo a ser criado, dentre eles estão "Checkbox", "Data", "Data/Hora", "Multisseleção", "Suspenso", "Texto" e "Área de texto", no nosso caso foi escolhido a opção de Texto.
 Após a seleção, você será direcionado a tela de configuração do campo, onde tem 3 campos obrigatórios, Nome, Campo e Ordem do Campo mas um já vem preenchido (Ordem do Campo). "Nome" é a variável a ser criada, não pode conter nada além de  caracteres alfabéticos e numéricos. Já o "Campo" é o texto label que aparecerá no OTRS quando ele for solicitado, seja nas tabelas ou em modais do sistema. Além desses campos, um campo interessante é o 'Mostrar Link', que permite uma formatação do valor a ser informado no campo para o link colocado, essa formatação se dá da seguinte forma [% Data.XXX | uri %] onde Data.XXX é referente à todos os campos dinâmicos, no lugar do XXX deve colocar o "Nome" do campo. A imagem abaixo mostra como ficou a configuração do campo redmine.
 ![OTRS Campos Dinâmicos - Campo Redmine](/img/otrs-customfield-redmine.png)
 
@@ -83,7 +83,262 @@ A tela de ViewStatus e ViewLocked, a forma de incluir o campo é praticamente a 
 
 Na tela de ViewNote, basta procurar por DynamicField que aparecerá a tabela onde se informar o Nome do campo (sem a necessidade do DynamicField_) e o valor que ele vai receber que varia entre 0 (Desabilitado, não pode ser mexido por ninguém), 1 (Habilitado, o agente pode optar por preenche-lo ou não) e 2 (Habilitado e requerido, obrigatoriamente deve ser informado).
 ![OTRS Campos Dinâmicos - ViewNote](/img/otrs-customfield-viewnote.png)
-
-# Terceiro Passo: Configuração do Redmine
 ## Mudança no código
+Explicar sobre os arquivos RedmineInvoker.pm, REST.pm, Mapping.pm, Simple.pm
+
+### RedmineInvoker.pm
+Conforme citado anteriormente, o RedmineInvoker foi desenvolvido para ser a ponte entre o OTRS e o Redmine. O Invocador possue 3 subrotinas.
+* new
+* PrepareRequest
+* HandleResponse
+
+Na subrotina new, foi alterado somente para incluir a exitencia do TicketObject, que possue métodos relacionados ao Ticket em geral. Esses métodos encontram-se [nesse link.](https://otrs.github.io/doc/api/otrs/stable/Perl/Kernel/System/Ticket.pm.html)
+```
+sub new {
+    my ( $Type, %Param ) = @_;
+    # allocate new hash for object
+    my $Self = {};
+    ###############################  editado a partir daqui ###############################
+    $Self->{TicketObject} = Kernel::System::Ticket->new( %Param );
+    ###############################     editado até aqui    ###############################
+    bless( $Self, $Type );
+    # check needed params
+    if ( !$Param{DebuggerObject} ) {
+        return {
+            Success      => 0,
+            ErrorMessage => "Got no DebuggerObject!"
+        };
+    }
+    $Self->{DebuggerObject} = $Param{DebuggerObject};
+    return $Self;
+}
+```
+Na subrotina PrepareRequest, foi alterado para consultar o Ticket atual, pois como o evento é após a edição, no hash $Param{Data} contem o estado anterior do Ticket em $Param{Data}->{OldTicketData}.
+```
+my %Ticket = $Self->{TicketObject}->TicketGet(TicketID => $Param{Data}->{TicketID},);
+```
+A partir disso, verifico se o StateID é o desejado e se ele mudou nessa atualização, para evitar que qualquer nota lançada ou mudança de proprietário tentasse criar uma tarefa no Redmine.
+```
+if ( %Ticket{StateID} == 11 && $Param{Data}->{OldTicketData}->{StateID} != %Ticket{StateID}) {
+```
+Como parte do processo, ao mudar o estado do OTRS para "Em Desenvolvimento", a nota que será enviada junto será carregada para justamente servir de fonte para a Tarefa a ser criada. Essa nota é salva em $Param{Data}->{UltimaNota}
+```
+# Pesquisando as Notas do Ticket
+my @Article = $Self->{TicketObject}->ArticleGet(TicketID => $Param{Data}->{TicketID},
+);
+# Extraindo a Ultima nota e colocando-a no Param Data
+my $last_one = pop @Article;
+$Param{Data}->{UltimaNota} = $last_one;
+```
+No Redmine, cada Tarefa deve obrigatoriamente pertencer à um projeto. No nosso caso, o OTRS já estava configurado para que cada fila correspondesse à um modulo no sistema, para fazer essa correlação, foi incluso um array com os ID das Filas X ID dos Projetos. Futuramente isso pode ser melhorado.
+```
+# Montando array  que correlaciona QueueID com project_id
+my %queueProject;
+$queueProject{3} = 24; # Compras
+$queueProject{4} = 25; # Estoque
+$queueProject{8} = 26; # Faturamento
+$queueProject{6} = 27; # Financeiro
+$queueProject{9} = 17; # NFe
+$queueProject{5} = 28; # Serviço
+```
+Com essas informações é possível montar um JSON que será enviado ao Redmine, guardado na variável $Param{Data}->{issue}.
+```
+# Montando o JSON da Issue
+my %issue_json = (
+  issue => {
+    status_id => 1, # Quest Nova
+    tracker_1 => 2, # Funcionalidade
+    author_id => 37, # ID do SuporteOTRS no Redmine
+    assigned_to_id => 37, # ID do SuporteOTRS no Redmine
+    project_id => $queueProject{$Param{Data}->{OldTicketData}->{QueueID}},
+    subject => $Param{Data}->{UltimaNota}->{Subject},
+    description => $Param{Data}->{UltimaNota}->{Body},
+    custom_fields => [
+        {
+          id => 1,
+          name => "OTRS",
+          value => $Param{Data}->{OldTicketData}->{TicketNumber}
+        }
+    ]
+  }
+);
+# Adicionando o JSON no Param Data
+$Param{Data}->{issue} = encode_utf8(encode_json \%issue_json);
+```
+No final o método se assemelhará a esse abaixo.
+```
+sub PrepareRequest {
+	my ( $Self, %Param ) = @_;
+  # Carrega o ticket atual
+  my %Ticket = $Self->{TicketObject}->TicketGet(TicketID => $Param{Data}->{TicketID},);
+  # verifica se o Estado dele é 11 (Em Desenvolvimento)
+  if ( %Ticket{StateID} == 11 && $Param{Data}->{OldTicketData}->{StateID} != %Ticket{StateID}) {
+      # Pesquisando as Notas do Ticket
+    	my @Article = $Self->{TicketObject}->ArticleGet(TicketID => $Param{Data}->{TicketID},
+    	);
+      # Extraindo a Ultima nota e colocando-a no Param Data
+      my $last_one = pop @Article;
+      $Param{Data}->{UltimaNota} = $last_one;
+      # Montando array  que correlaciona QueueID com project_id
+      my %queueProject;
+      $queueProject{3} = 24; # Compras
+      $queueProject{4} = 25; # Estoque
+      $queueProject{8} = 26; # Faturamento
+      $queueProject{6} = 27; # Financeiro
+      $queueProject{9} = 17; # NFe
+      $queueProject{5} = 28; # Serviço
+      # adicionar proximas correlções quando tiver ou refazer
+      # Montando o JSON da Issue
+      my %issue_json = (
+        issue => {
+          status_id => 1, # Quest Nova
+          tracker_1 => 2, # Funcionalidade
+    			author_id => 37, # ID do SuporteOTRS no Redmine
+          assigned_to_id => 37, # ID do SuporteOTRS no Redmine
+    			project_id => $queueProject{$Param{Data}->{OldTicketData}->{QueueID}},
+          subject => $Param{Data}->{UltimaNota}->{Subject},
+          description => $Param{Data}->{UltimaNota}->{Body},
+          custom_fields => [
+              {
+                id => 1,
+                name => "OTRS",
+                value => $Param{Data}->{OldTicketData}->{TicketNumber}
+              }
+          ]
+        }
+    	);
+      # Adicionando o JSON no Param Data
+      $Param{Data}->{issue} = encode_utf8(encode_json \%issue_json);
+    	return {
+    		Success => 1,
+    		Data => $Param{Data},
+    	};
+  }else{
+    return $Self->{DebuggerObject}->Error( Summary => 'Estado Atual: ' . %Ticket{StateID});
+  }
+}
+```
+O método de HandleResponse não foi alterado.
+
+### REST.pm
+Dentre os métodos dessa classe, o único que foi mexido foi a subrotina RequesterPerformRequest, responsável por montar todo o processo do Perl para comunicação REST.
+Como o Perl converte todo o hash ${Param} para JSON, foi necessário excluir os itens OldTicketData, TicketID e UltimaNota da seguinte forma.
+```
+# Excluindo coisas que não vao servir daqui pra frente!
+delete $Param{Data}->{OldTicketData};
+delete $Param{Data}->{TicketID};
+delete $Param{Data}->{UltimaNota};
+```
+Após isso, internamente a subrotina verifica se os métodos PUT, POST e PATCH são chamados, caso sim então ele faz a codificação para JSON. Como já havia pré-montado o JSON no RedmineInvoker, foi necessário descodifica-lo para que essa parte o codifique novamente. Futuramente isso mode ser melhorado.
+```
+my $json = decode_json $Param{Data}->{issue};
+$Param{Data} = $JSONObject->Encode(
+    Data => $json,
+);
+```
+E para finalizar, alterei a verificação da resposta, onde ele somente verificava se foi o HTTP code 200, mas como o de criação é 201, considerei-o também assim
+```
+if ( $ResponseCode ne '200' && $ResponseCode ne '201' ) {
+    $ResponseError = $ErrorMessage . " Response code '$ResponseCode'.";
+}
+```
+# Terceiro Passo: Configuração do Redmine
+Infelizmente (ou não), o Redmine não possue um modo Requester como o OTRS, o que torna a configuração mais pelo lado do cógido do que pela interface do mesmo. Por interface, a única coisa a ser feita é a criação do campo OTRS.
 ## Campo OTRS
+Para criar o campo de OTRS, deve-se ir na parte de Administração > Campos personalizados. Ao clicar no botão de novo campo, pede-se para qual objeto do Redmine esse campo será criado. No nosso caso, será criado para Tarefas. Após isso, seleciona-se o 'Tipo' do campo, no nosso caso foi Texto, informar 'Nome' do campo, e informa 'Valores do link para URL', que se for preenchido com "http://[HOST]:[PORT]/otrs/index.pl?Action=AgentTicketZoom;TicketNumber=%value%", ao clicar no campo com um valor válido uma nova janela é aberta carregando o chamado com o número informado no campo. Além desses campos, pode-se informar se ele vai ser pesquisável, se pertence a todos os projetos ou só a alguns, para quais tipos de tarefas e paéis ele irá aparecer.
+![OTRS Campos Dinâmicos - Campo Redmine](/img/otrs-customfield-redmine.png)
+
+## Mudança no código
+Basicamente, o único arquivo do Redmine que foi mexido foi o "issues_controller.rb", nele estão contidos os métodos "create" e "update".
+No método de create, apenas foi adicionado a verificação do valor do campo OTRS, caso ele exista com um valor, o webservice do OTRS é chamado. Isso permite que tanto quando o OTRS criar a tarefa, quanto se a tarefa for criada avulsa, o OTRS será atualizado para apontar a esta tarefa. Para o webservice de atualização, é necessário informar o TicketNumber ou TicketID e os parametros de autenticação, no body passar um JSON com "{"DynamicField":{"Name": "redmine", "Value":#{@issue.id}}}", a praticidade do código do Rails do redmine permite escrever expression-language na string e a mesma ser interpretada para carregar o valor, quaisquer informações a mais podem ser consultadas dessa forma.
+```
+def create
+  call_hook(:controller_issues_new_before_save, { :params => params, :issue => @issue })
+  @issue.save_attachments(params[:attachments] || (params[:issue] && params[:issue][:uploads]))
+  if @issue.save
+    call_hook(:controller_issues_new_after_save, { :params => params, :issue => @issue})
+    ###############################  editado a partir daqui ###############################
+    field = IssueCustomField.find_by_name('OTRS')
+    if @issue.custom_value_for(field).value
+      uri = URI.parse("http://localhost:81/otrs/nph-genericinterface.pl/Webservice/Teste/UpdateTicket?TicketNumber=#{@issue.custom_value_for(field)}&UserLogin=user@example.com&Password=yourpass")
+      body = "{\"DynamicField\" : {\"Name\" : \"redmine\", \"Value\" : #{@issue.id}}}"
+      headers = {'Content-Type' => 'application/json', 'Charset' => 'utf-8' }
+      http = Net::HTTP.new(uri.host, uri.port)
+      request = Net::HTTP::Put.new(uri.request_uri)
+      headers.keys.each do |key|
+        request[key] = headers[key]
+      end
+      request.body = body
+      http.request(request)
+    end
+    ###############################     editado até aqui    ###############################
+    respond_to do |format|
+      format.html {
+        render_attachment_warning_if_needed(@issue)
+        flash[:notice] = l(:notice_issue_successful_create, :id => view_context.link_to("##{@issue.id}", issue_path(@issue), :title => @issue.subject))
+        if params[:continue]
+          attrs = {:tracker_id => @issue.tracker, :parent_issue_id => @issue.parent_issue_id}.reject {|k,v| v.nil?}
+          redirect_to new_project_issue_path(@issue.project, :issue => attrs)
+        else
+          redirect_to issue_path(@issue)
+        end
+      }
+      format.api  { render :action => 'show', :status => :created, :location => issue_url(@issue) }
+    end
+    return
+  else
+    respond_to do |format|
+      format.html { render :action => 'new' }
+      format.api  { render_validation_errors(@issue) }
+    end
+  end
+end
+```
+No método de update, também foi adicionado a verificação do valor do campo OTRS, caso ele exista com um valor, o webservice do OTRS é chamado, mas além disso verifica-se também se a situação da tarefa foi modificada também, em especial para a situação de vitória. Aproveito esse momento para além de alterar o Estado do OTRS, lançar uma nota informando que o desenvolvimento já concluiu a solicitação e que está sendo aguardado um novo deploy para teste.
+```
+def update
+  return unless update_issue_from_params
+  @issue.save_attachments(params[:attachments] || (params[:issue] && params[:issue][:uploads]))
+  saved = false
+  begin
+    saved = save_issue_with_child_records
+  rescue ActiveRecord::StaleObjectError
+    @conflict = true
+    if params[:last_journal_id]
+      @conflict_journals = @issue.journals_after(params[:last_journal_id]).all
+      @conflict_journals.reject!(&:private_notes?) unless User.current.allowed_to?(:view_private_notes, @issue.project)
+    end
+  end
+
+  if saved
+    render_attachment_warning_if_needed(@issue)
+    flash[:notice] = l(:notice_successful_update) unless @issue.current_journal.new_record?
+    ###############################  editado a partir daqui ###############################
+    # verificar se tem o campo OTRS informado e se a situação da issue é Vitória(id=5)
+    field = IssueCustomField.find_by_name('OTRS')
+    if @issue.custom_value_for(field).value && @issue.status_id == 5
+      uri = URI.parse("http://localhost:81/otrs/nph-genericinterface.pl/Webservice/Teste/UpdateTicket?TicketNumber=#{@issue.custom_value_for(field)}&UserLogin=user@example.com&Password=yourpass")
+      body = "{\"Ticket\" : {\"StateID\" : 10}, \"Article\" : {\"Subject\" : \"Retorno do Desenvolvimento\", \"Body\":\"#{@issue.current_journal.notes}\", \"ArticleType\":\"note-internal\", \"HistoryType\":\"AddNote\",\"Charset\": \"utf8\", \"MimeType\":\"application/json\"}}"
+      headers = {'Content-Type' => 'application/json', 'Charset' => 'utf-8' }
+      http = Net::HTTP.new(uri.host, uri.port)
+      request = Net::HTTP::Put.new(uri.request_uri)
+      headers.keys.each do |key|
+        request[key] = headers[key]
+      end
+      request.body = body
+      http.request(request)
+    end
+    ###############################     editado até aqui    ###############################
+    respond_to do |format|
+      format.html { redirect_back_or_default issue_path(@issue) }
+      format.api  { render_api_ok }
+    end
+  else
+    respond_to do |format|
+      format.html { render :action => 'edit' }
+      format.api  { render_validation_errors(@issue) }
+    end
+  end
+end
+```
+Ambas as alterações enncontram-se na pasta Redmine desse repositório
