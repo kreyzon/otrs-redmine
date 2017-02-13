@@ -40,7 +40,15 @@ Após o entendimento de como o processo de atualização deva funcionar, tem que
 
 Percebam que o OTRS tem 2 modos de webservices, Provedor e Requisitante. No Provedor será configurado para que chamadas possam ser feitas ao OTRS, onde uma série de Operações já definidas podem ser selecionadas para habilitar nesse webservice que foi criado. No nosso caso, focarei nas Operação de TicketUpdate, uma vez que a comunicação com o Redmine depende do chamado já está criado e está sendo atualizado. No Requisitante é configurado  a comunicação com o Redmine, onde é indicado o host do Redmine e autenticação, além de configurar Eventos do OTRS para realizar as chamadas no Redmine. Novamente no nosso caso, focarei no Evento TicketStateUpdate, pois é a partir de uma atualização do Estado do chamado que o monstro é criado.
 ## Provedor
+![alt text](https:/github.com/kreyzon/otrs-redmine/tree/master/img/otrs-provider.png)
+Conforme a imagem acima, a parte de Provedor do OTRS é composta de 2 sessões, Configurações e Operações.
+![alt text](https:/github.com/kreyzon/otrs-redmine/tree/master/img/otrs-provider-transport.png)
+![alt text](https:/github.com/kreyzon/otrs-redmine/tree/master/img/otrs-provider-operationdetail.png)
 ## Requisitante
+![alt text](https:/github.com/kreyzon/otrs-redmine/tree/master/img/otrs-requester.png)
+Conforme a imagem acima, a parte de Provedor do OTRS é composta de 2 sessões, Configurações e Invocadores.
+![alt text](https:/github.com/kreyzon/otrs-redmine/tree/master/img/otrs-requester-transport.png)
+![alt text](https:/github.com/kreyzon/otrs-redmine/tree/master/img/otrs-requester-invokerdetail.png)
 ## Campo Redmine
 # Terceiro Passo: Configuração do Redmine
 ## Mudança no código
