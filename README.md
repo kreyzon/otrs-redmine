@@ -57,6 +57,8 @@ Na parte de Configurações, uma vez que tenha sido escolhida entre HTTP::REST o
  * NOME_PATH: nome do PATH dado no mapeamento para acessa a Operation desejada
  * [PARAMS]: sequência de parametros utilizados para uso do Webservice. No geral, são obrigatórios os parâmetros "UserLogin" ou "CustomerID" junto de "Password" ou o parâmetro "SessionID" que pode ser gerado com a Operação 'SessionCreate', que só exige os parâmetros "UserLogin" ou "CustomerID" junto de "Password". Dependendo da operação, existem outros parâmetros obrigatórios. Essa relação pode ser encontrada [na documentação de desenvolvedor do OTRS](https://otrs.github.io/doc/api/otrs/stable/Perl/index.html) pesquisando por 'Kernel::GenericInterface::Operation'
 
+Outras explicações sobre a parte de Provedor encontram-se [nesse link](http://doc.otrs.com/doc/manual/admin/stable/en/html/genericinterface.html#id-1.6.12.7.7.11.9.8.1)
+
 ## Requisitante
 ![OTRS Requisitante](/img/otrs-requester.png)
 Conforme a imagem acima, a parte de Requisitante do OTRS é composta de 2 sessões, Configurações e Invocadores. Como algumas opções da parte de Configurações dependem dos Invocadores, vou explicar sua configuração inicialmente. Adianto que nessa parte foi necessário fazer uma mudança no código, pois os Invocadores fornecidos pelo OTRS são extremamente genéricos e não funcionam, servem apenas para servir de exemplo para serem desenvolvidos. Em "Mudança de código" está explicado o que foi alterado e como habilitar o Invocador novo. No nosso caso, esse invocador se chama RedmineInvoker.
@@ -66,6 +68,20 @@ Para entrar na tela de Detalhes do Invocador (imagem abaixo), ou se seleciona um
 
 Na parte de Configuração, conforme imagem abaixo, é necessário informar a URL do host do webservice, no nosso caso, o do acesso ao Redmine, e para cada invocador é necessário informar o PATH que será acessado no webservice remoto. Como a chamada do Redmine é feita através de JSON e queremos criar tarefas, basta colocar como /issues.json e indicar quais métodos HTTP são válidos para a chamada. Além disso, deve-se informar qual a autenticação, que no caso seria BasicAuth e informar um usuário e senha válidos no Redmine.
 ![OTRS Requisitante - Configuração de Transporte](/img/otrs-requester-transport.png)
+
+Outras explicações sobre a parte de Requisitante encontram-se [nesse link](http://doc.otrs.com/doc/manual/admin/stable/en/html/genericinterface.html#id-1.6.12.7.7.11.11.13.1)
+
+### Habilitar RedmineInvoker
+Como foi explicado acima, é necessário selecionar um Invoker, entretanto inicialmente só aparecem dois invocadores de teste. Baseado nele foi desenvolvido um próprio para atender as necessidades da empresa, o RedmineInvoker.pm. Para poder usa-la, deve-se fazer a seguinte operação:
+
++ Copiar o arquivo RedmineInvoker.pm para a pasta "{INSTALL_DIR}/Kernel/GenericInterface/Invoker/Test/"
++ Copiar o arquivo GenericInterface.xml para a pasta "{INSTALL_DIR}/Kernel/Config/Files/"
++ Pela interface web do OTRS, ir em Administração > Configuração do Sistema
++ Filtrar pelo grupo GenericInterface e selecionar a opção GenericInterface::Invoker::ModuleRegistration
++ A opção do RedmineInvoker aparecerá como desabilitada, basta marca o checkbox e clicar em atualizar
+
+Ao final do processo, a tela aparecerá conforme a imagem abaixo
+![OTRS Requisitante - Configuração de Transporte](/img/otrs-requester-invokerregistration.png)
 
 ## Campo Redmine
 Uma vez configurado como o OTRS vai se comportar, seja como Provedor, seja como Requisitante, é necessário uma última alteração a ser feita que é um link direto entre o OTRS e o Redmine. Para isso, basta ir em Administração > Campos Dinâmicos. Na tela é possível criar um campo novo para "Chamado" ou para "Artigo", foi escolhida a opção de deixar em Chamado pois é mais visível ao agente de suporte. Ao clicar sobre o campo do Chamado, aparece uma lista de opções sobre o tipo do campo a ser criado, dentre eles estão "Checkbox", "Data", "Data/Hora", "Multisseleção", "Suspenso", "Texto" e "Área de texto", no nosso caso foi escolhido a opção de Texto.
@@ -84,7 +100,7 @@ A tela de ViewStatus e ViewLocked, a forma de incluir o campo é praticamente a 
 Na tela de ViewNote, basta procurar por DynamicField que aparecerá a tabela onde se informar o Nome do campo (sem a necessidade do DynamicField_) e o valor que ele vai receber que varia entre 0 (Desabilitado, não pode ser mexido por ninguém), 1 (Habilitado, o agente pode optar por preenche-lo ou não) e 2 (Habilitado e requerido, obrigatoriamente deve ser informado).
 ![OTRS Campos Dinâmicos - ViewNote](/img/otrs-customfield-viewnote.png)
 ## Mudança no código
-Explicar sobre os arquivos RedmineInvoker.pm, REST.pm, Mapping.pm, Simple.pm
+Explicação sobre as mudanças nos arquivos RedmineInvoker.pm, GenericInterface.xml, REST.pm, Mapping.pm, Simple.pm
 
 ### RedmineInvoker.pm
 Conforme citado anteriormente, o RedmineInvoker foi desenvolvido para ser a ponte entre o OTRS e o Redmine. O Invocador possue 3 subrotinas.
@@ -219,6 +235,39 @@ sub PrepareRequest {
 }
 ```
 O método de HandleResponse não foi alterado.
+
+### GenericInterface.xml
+A alteração nesse arquivo foi a de incluir o arquivo RedmineInvoker.pm como opção de Invoker, para isso foi posto logo após a tag abaixo
+```
+<ConfigItem Name="GenericInterface::Invoker::Module###Test::TestSimple" Required="0" Valid="0">
+  <Description Translatable="1">GenericInterface module registration for the invoker layer.</Description>
+  <Group>GenericInterface</Group>
+  <SubGroup>GenericInterface::Invoker::ModuleRegistration</SubGroup>
+  <Setting>
+     <Hash>
+        <Item Key="Name">TestSimple</Item>
+        <Item Key="Controller">Test</Item>
+        <Item Key="ConfigDialog">AdminGenericInterfaceInvokerDefault</Item>
+     </Hash>
+  </Setting>
+</ConfigItem>
+```
+As seguintes linhas de tag
+```
+<ConfigItem Name="GenericInterface::Invoker::Module###Test::RedmineInvoker" Required="0" Valid="0">
+    <Description Translatable="1">GenericInterface module registration for the invoker layer.</Description>
+    <Group>GenericInterface</Group>
+    <SubGroup>GenericInterface::Invoker::ModuleRegistration</SubGroup>
+    <Setting>
+        <Hash>
+            <Item Key="Name">Test</Item>
+            <Item Key="Controller">Test</Item>
+            <Item Key="ConfigDialog">AdminGenericInterfaceInvokerDefault</Item>
+        </Hash>
+    </Setting>
+</ConfigItem>
+```
+Isso fará com que a opção de RedmineInvoker apareça nas opções de "GenericInterface::Invoker::ModuleRegistration", que uma vez habilitado apareçará nas opções de "Adicionar Invoker".
 
 ### REST.pm
 Dentre os métodos dessa classe, o único que foi mexido foi a subrotina RequesterPerformRequest, responsável por montar todo o processo do Perl para comunicação REST.
